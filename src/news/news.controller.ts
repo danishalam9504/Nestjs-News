@@ -1,13 +1,27 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { NewsService } from './news.service';
+import { NewsDto } from './dto/news.dto';
 
 @Controller('news')
 export class NewsController {
     constructor(private newsService: NewsService) { }
    
-    @Get()
+  @Get()
   findAll() {
-    return this.newsService.findAll();
+    const index = 'student';
+    const query = {
+      query: {
+        match_all: {}, // Replace with your Elasticsearch query
+      },
+      sort: [
+        {
+          "page_count": {
+            order: "desc"
+          }
+        }
+      ], 
+    };
+    return this.newsService.findAll(index,query);
   }
 
   @Get('search')
@@ -15,7 +29,7 @@ export class NewsController {
     if (Object.keys(query).length > 0) {
       return this.newsService.findByQuery(query);
     } else {
-      return this.newsService.findAll();
+      // return this.newsService.findAll();
     }
   }
 
@@ -25,8 +39,9 @@ export class NewsController {
   }
 
   @Post()
-  create(@Body() data: any) {
-    return this.newsService.create(data);
+  create(@Body() data: NewsDto) {
+    const index='student';
+    return this.newsService.create(index,data);
   }
 
   @Put(':id')

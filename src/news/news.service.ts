@@ -1,11 +1,23 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-
+import { ElasticsearchService } from '@nestjs/elasticsearch';
+import { NewsDto } from './dto/news.dto';
 @Injectable()
 export class NewsService {
+    constructor(private readonly elasticsearchService: ElasticsearchService) { }
     private news = [];
 
-    findAll() {
-        return this.news;
+    async searchFromES(index: string, body: any): Promise<any> {
+        return this.elasticsearchService.search({
+            index
+        });
+    }
+
+    findAll(index: string, body: any) {
+        return this.elasticsearchService.search({
+            index,
+            body
+        });
+        // return this.news;
     }
 
     findOne(id: number) {
@@ -16,17 +28,21 @@ export class NewsService {
         return newsItem;
     }
 
-    create(data: any | any[]) {
-        if (Array.isArray(data)) {
-            // If data is an array, push each item individually
-            data.forEach(item => {
-                this.news.push(item);
-            });
-        } else {
-            // If data is not an array, push it as a single item
-            this.news.push(data);
-        }
-        return data;
+    create(index: string, data: NewsDto) {
+        // if (Array.isArray(data)) {
+        //     // If data is an array, push each item individually
+        //     data.forEach(item => {
+        //         this.news.push(item);
+        //     });
+        // } else {
+        //     // If data is not an array, push it as a single item
+        //     this.news.push(data);
+        // }
+        // return data;
+        return this.elasticsearchService.index({
+            index,
+            body: data
+          });
     }
 
     update(id: string, data: any) {
@@ -62,17 +78,17 @@ export class NewsService {
 
     findByQuery(query: { [key: string]: string }) {
         const filteredNews = this.news.filter(item => {
-          return Object.keys(query).every(key => {
-            const queryValue = query[key].toLowerCase();
-            const itemValue = item[key]?.toLowerCase(); // Use optional chaining for cases where item[key] is undefined
-            return itemValue.includes(queryValue);
-          });
+            return Object.keys(query).every(key => {
+                const queryValue = query[key].toLowerCase();
+                const itemValue = item[key]?.toLowerCase(); // Use optional chaining for cases where item[key] is undefined
+                return itemValue.includes(queryValue);
+            });
         });
-    
+
         if (filteredNews.length === 0) {
-          throw new NotFoundException(`News with specified query parameters not found`);
+            throw new NotFoundException(`News with specified query parameters not found`);
         }
-    
+
         return filteredNews;
-      }
+    }
 }
