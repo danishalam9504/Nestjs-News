@@ -7,9 +7,9 @@ import { ElasticsearchModule } from '@nestjs/elasticsearch';
   imports:[
     ElasticsearchModule.registerAsync({
       useFactory: () => ({
-        node: 'https://0c14973a18374052b6ddb3bb0ff51584.us-central1.gcp.cloud.es.io:443',
+        node: 'https://6410070b697146d6972cc1af12c0d881.us-central1.gcp.cloud.es.io:443',
         auth: {
-          apiKey: 'S2Ywb2ZZd0JzNnd3VERsam1jamo6dUoxWUdqNkZSSGltZE5BVDktM0ZZZw==',
+          apiKey: 'QUVySjFZd0JCa3F4RnpEVWIycGE6NlRrMlRVTW9SejZmUzRtY3UxSHEwZw==',
         },
       }),
     }),

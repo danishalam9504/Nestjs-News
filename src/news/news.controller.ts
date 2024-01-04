@@ -1,47 +1,97 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { NewsService } from './news.service';
 import { NewsDto } from './dto/news.dto';
+import { SearchDto } from './dto/search.dto';
 
 @Controller('news')
 export class NewsController {
-    constructor(private newsService: NewsService) { }
-   
+  constructor(private newsService: NewsService) { }
+
+  index = 'news';
+  query: any;
   @Get()
   findAll() {
-    const index = 'student';
-    const query = {
+    this.query = {
       query: {
-        match_all: {}, // Replace with your Elasticsearch query
+        match_all: {},
       },
       sort: [
         {
-          "page_count": {
+          "published_date": {
             order: "desc"
           }
         }
-      ], 
+      ],
     };
-    return this.newsService.findAll(index,query);
+    return this.newsService.findAll(this.index, this.query);
   }
 
-  @Get('search')
-  searchByKey(@Query() query: { [key: string]: string }) {
-    if (Object.keys(query).length > 0) {
-      return this.newsService.findByQuery(query);
-    } else {
-      // return this.newsService.findAll();
+  @Post('search')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  searchByKey(@Body() data: SearchDto) {
+    const { search_value,search_key,sort_by,sort_by_key,from,size,country,category,creator,language,article_source} = data;
+
+    let filter = [];
+
+    // Function to add terms to filter if array is not empty
+    const addTermsToFilter = (field:string, values:any) => {
+        if (values && values.length > 0) {
+            filter.push({
+                terms: {
+                    [`${field}.keyword`]: values
+                }
+            });
+        }
+    };
+    
+    // Add terms to filter based on non-empty arrays
+    addTermsToFilter('country', country);
+    addTermsToFilter('category', category);
+    addTermsToFilter('creator', creator);
+    addTermsToFilter('language', language);
+    addTermsToFilter('article_source', article_source);
+
+    this.query ={
+      "query": {
+        "bool": {
+          "must": {
+            "multi_match": {
+              "query": search_value,
+              "fields": search_key
+            }
+          },
+          "filter": filter
+        }
+      },
+      "sort": [
+        {
+          [sort_by_key]: {
+            "order": sort_by
+          }
+        }
+      ],
+      "from": from,
+      "size": size
     }
+    return this.newsService.findAll(this.index, this.query);
   }
 
   @Get(':id')
   findOne(@Param('id') id: number) {
-    return this.newsService.findOne(id);
+    this.query = {
+      "query": {
+        "match": {
+          "_id": `${id}`
+        }
+      }
+    }
+    return this.newsService.findAll(this.index, this.query);
   }
 
   @Post()
+  @UsePipes(new ValidationPipe({ whitelist: true }))
   create(@Body() data: NewsDto) {
-    const index='student';
-    return this.newsService.create(index,data);
+    return this.newsService.create(this.index, data);
   }
 
   @Put(':id')

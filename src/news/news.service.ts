@@ -17,7 +17,6 @@ export class NewsService {
             index,
             body
         });
-        // return this.news;
     }
 
     findOne(id: number) {
@@ -29,18 +28,11 @@ export class NewsService {
     }
 
     create(index: string, data: NewsDto) {
-        // if (Array.isArray(data)) {
-        //     // If data is an array, push each item individually
-        //     data.forEach(item => {
-        //         this.news.push(item);
-        //     });
-        // } else {
-        //     // If data is not an array, push it as a single item
-        //     this.news.push(data);
-        // }
-        // return data;
+        const indexId = data['id'];
+        delete data['id'];
         return this.elasticsearchService.index({
             index,
+            id:indexId,
             body: data
           });
     }
@@ -76,19 +68,20 @@ export class NewsService {
         }
     }
 
-    findByQuery(query: { [key: string]: string }) {
-        const filteredNews = this.news.filter(item => {
-            return Object.keys(query).every(key => {
-                const queryValue = query[key].toLowerCase();
-                const itemValue = item[key]?.toLowerCase(); // Use optional chaining for cases where item[key] is undefined
-                return itemValue.includes(queryValue);
-            });
-        });
+    searchByQuery(query: { [key: string]: string }) {
+        
+        // const filteredNews = this.news.filter(item => {
+        //     return Object.keys(query).every(key => {
+        //         const queryValue = query[key].toLowerCase();
+        //         const itemValue = item[key]?.toLowerCase(); // Use optional chaining for cases where item[key] is undefined
+        //         return itemValue.includes(queryValue);
+        //     });
+        // });
 
-        if (filteredNews.length === 0) {
-            throw new NotFoundException(`News with specified query parameters not found`);
-        }
+        // if (filteredNews.length === 0) {
+        //     throw new NotFoundException(`News with specified query parameters not found`);
+        // }
 
-        return filteredNews;
+        // return filteredNews;
     }
 }
