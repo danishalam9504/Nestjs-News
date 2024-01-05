@@ -2,7 +2,7 @@ import { IsNotEmpty, IsString, IsArray, IsIn, IsInt, Min } from 'class-validator
 
 export class SearchDto {
   
-  @IsNotEmpty()
+  // @IsNotEmpty()
   @IsString()
   search_value: string;
 

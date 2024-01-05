@@ -68,4 +68,13 @@ export class NewsDto{
 
   @IsString() // Assuming 'Mobile' is the only allowed source
   source: string;
+
+  @IsNotEmpty() // ensures the created_at is not empty
+  @IsNumber()
+  created_at: number;
+
+  @IsNotEmpty() // ensures the created_at is not empty
+  @IsNumber()
+  updated_at: number;
+
 }

@@ -23,27 +23,42 @@ export class NewsController {
         }
       ],
     };
-    return this.newsService.findAll(this.index, this.query);
+    return this.newsService.executeQuery(this.index, this.query);
   }
 
   @Post('search')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   searchByKey(@Body() data: SearchDto) {
-    const { search_value,search_key,sort_by,sort_by_key,from,size,country,category,creator,language,article_source} = data;
+    const { search_value, search_key, sort_by, sort_by_key, from, size, country, category, creator, language, article_source } = data;
 
     let filter = [];
+    let must:any;
+
+    // Check if search_value is null, undefined, or an empty string
+    if (!search_value || search_value.trim() === "") {
+      must = {
+        "match_all": {}
+      };
+    } else {
+      must = {
+        "multi_match": {
+          "query": search_value,
+          "fields": search_key
+        }
+      };
+    }
 
     // Function to add terms to filter if array is not empty
-    const addTermsToFilter = (field:string, values:any) => {
-        if (values && values.length > 0) {
-            filter.push({
-                terms: {
-                    [`${field}.keyword`]: values
-                }
-            });
-        }
+    const addTermsToFilter = (field: string, values: any) => {
+      if (values && values.length > 0) {
+        filter.push({
+          terms: {
+            [`${field}.keyword`]: values
+          }
+        });
+      }
     };
-    
+
     // Add terms to filter based on non-empty arrays
     addTermsToFilter('country', country);
     addTermsToFilter('category', category);
@@ -51,15 +66,10 @@ export class NewsController {
     addTermsToFilter('language', language);
     addTermsToFilter('article_source', article_source);
 
-    this.query ={
+    this.query = {
       "query": {
         "bool": {
-          "must": {
-            "multi_match": {
-              "query": search_value,
-              "fields": search_key
-            }
-          },
+          "must": must,
           "filter": filter
         }
       },
@@ -73,7 +83,7 @@ export class NewsController {
       "from": from,
       "size": size
     }
-    return this.newsService.findAll(this.index, this.query);
+    return this.newsService.executeQuery(this.index, this.query);
   }
 
   @Get(':id')
@@ -85,7 +95,7 @@ export class NewsController {
         }
       }
     }
-    return this.newsService.findAll(this.index, this.query);
+    return this.newsService.executeQuery(this.index, this.query);
   }
 
   @Post()
@@ -106,6 +116,13 @@ export class NewsController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.newsService.remove(id);
+    this.query = {
+      "query": {
+        "match": {
+          "_id": id
+        }
+      }
+    }
+    return this.newsService.remove(this.index, this.query);
   }
 }
