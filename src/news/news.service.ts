@@ -55,4 +55,26 @@ export class NewsService {
             body:query
         })
     }
+
+    extractRequiredFields(jsonData:any) {
+        const hits = jsonData.hits.hits;
+      
+        const extractedData = hits.map((hit:any) => {
+          const source = hit._source;
+          return {
+            title: source.title,
+            keywords: source.keywords,
+            creator: source.creator,
+            video_url: source.video_url,
+            image_url: source.image_url,
+            description: source.description,
+            content: source.content,
+            published_date: source.published_date,
+            country: source.country,
+            category: source.category,
+          };
+        });
+
+        return extractedData;
+    }
 }
