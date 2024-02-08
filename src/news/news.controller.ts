@@ -28,11 +28,11 @@ export class NewsController {
 
   @Post('search')
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  searchByKey(@Body() data: SearchDto) {
+  async searchByKey(@Body() data: SearchDto) {
     const { search_value, search_key, sort_by, sort_by_key, from, size, country, category, creator, language, article_source } = data;
 
     let filter = [];
-    let must:any;
+    let must: any;
 
     // Check if search_value is null, undefined, or an empty string
     if (!search_value || search_value.trim() === "") {
@@ -49,7 +49,7 @@ export class NewsController {
     }
 
     // Function to add terms to filter if array is not empty
-    const addTermsToFilter = (field: string, values: any) => {
+    const addTermsToFilter = async (field: string, values: any) => {
       if (values && values.length > 0) {
         filter.push({
           terms: {
@@ -83,7 +83,15 @@ export class NewsController {
       "from": from,
       "size": size
     }
-    return this.newsService.executeQuery(this.index, this.query);
+    const EsData =await this.newsService.executeQuery(this.index, this.query);
+    const extractedData = this.newsService.extractRequiredFields(EsData);
+    const count = EsData['hits']['total']['value'];
+
+    return {
+      status: "ok",
+      data: extractedData,
+      size:count
+    };
   }
 
   @Get(':id')
@@ -95,7 +103,14 @@ export class NewsController {
         }
       }
     }
-    return this.newsService.executeQuery(this.index, this.query);
+    const EsData = this.newsService.executeQuery(this.index, this.query);
+    const extractedData = this.newsService.extractRequiredFields(EsData);
+    const size = EsData['hits']['total']['value'];
+
+    return {
+      status: "ok",
+      data: extractedData
+    };
   }
 
   @Post()

@@ -1,4 +1,5 @@
-import { IsString, IsUrl, IsArray, IsDate, IsIn, IsOptional, IsNotEmpty, IsNumber } from 'class-validator';
+import { double } from '@elastic/elasticsearch/lib/api/types';
+import { IsString, IsUrl, IsArray, IsDate, IsIn, IsOptional, IsNotEmpty, IsNumber, IsDecimal } from 'class-validator';
 
 export class NewsDto{
 
@@ -22,8 +23,9 @@ export class NewsDto{
   keywords: string[];
 
   @IsNotEmpty() // ensures the creator is not empty
-  @IsString()
-  creator: string;
+  @IsArray()
+  @IsString({ each: true })
+  creator: string[];
 
   @IsUrl()
   video_url: string;
@@ -66,8 +68,12 @@ export class NewsDto{
   @IsString()
   language: string;
 
+  @IsNumber()
+  sentiment:number;
+
   @IsString() // Assuming 'Mobile' is the only allowed source
   source: string;
+
 
   @IsNotEmpty() // ensures the created_at is not empty
   @IsNumber()
