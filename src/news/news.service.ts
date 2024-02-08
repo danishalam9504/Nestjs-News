@@ -12,6 +12,16 @@ export class NewsService {
     //     });
     // }
 
+    queryForSingleNewsValue(id:string){
+        return {
+            "query": {
+              "match": {
+                "_id": `${id}`
+              }
+            }
+          }
+    }
+
     executeQuery(index: string, body: any) {
         return this.elasticsearchService.search({
             index,
@@ -62,6 +72,7 @@ export class NewsService {
         const extractedData = hits.map((hit:any) => {
           const source = hit._source;
           return {
+            id: hit._id,
             title: source.title,
             keywords: source.keywords,
             creator: source.creator,
@@ -72,6 +83,8 @@ export class NewsService {
             published_date: source.published_date,
             country: source.country,
             category: source.category,
+            created_at: source.created_at,
+            updated_at: source.updated_at,
           };
         });
 
