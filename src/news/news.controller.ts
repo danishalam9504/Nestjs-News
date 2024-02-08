@@ -83,29 +83,23 @@ export class NewsController {
       "from": from,
       "size": size
     }
-    const EsData =await this.newsService.executeQuery(this.index, this.query);
+    const EsData = await this.newsService.executeQuery(this.index, this.query);
     const extractedData = this.newsService.extractRequiredFields(EsData);
     const count = EsData['hits']['total']['value'];
 
     return {
       status: "ok",
       data: extractedData,
-      size:count
+      size: count
     };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    this.query = {
-      "query": {
-        "match": {
-          "_id": `${id}`
-        }
-      }
-    }
-    const EsData = this.newsService.executeQuery(this.index, this.query);
+  async findOne(@Param('id') id: string) {
+  
+    this.query = this.newsService.queryForSingleNewsValue(id);
+    const EsData = await this.newsService.executeQuery(this.index, this.query);
     const extractedData = this.newsService.extractRequiredFields(EsData);
-    const size = EsData['hits']['total']['value'];
 
     return {
       status: "ok",
@@ -115,7 +109,14 @@ export class NewsController {
 
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  create(@Body() data: NewsDto) {
+  async create(@Body() data: NewsDto) {
+
+    this.query = this.newsService.queryForSingleNewsValue(data['id']);
+    const EsData = await this.newsService.executeQuery(this.index, this.query);
+    const hits = EsData['hits']['hits'];
+    data['created_at'] = hits.length ? hits[0]['_source']['created_at'] : new Date().getTime();
+    data['updated_at'] = new Date().getTime();
+
     return this.newsService.create(this.index, data);
   }
 

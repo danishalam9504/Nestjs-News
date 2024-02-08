@@ -75,12 +75,12 @@ export class NewsDto{
   source: string;
 
 
-  @IsNotEmpty() // ensures the created_at is not empty
-  @IsNumber()
-  created_at: number;
+  // @IsNotEmpty() // ensures the created_at is not empty
+  // @IsNumber()
+  // created_at: number;
 
-  @IsNotEmpty() // ensures the created_at is not empty
-  @IsNumber()
-  updated_at: number;
+  // @IsNotEmpty() // ensures the created_at is not empty
+  // @IsNumber()
+  // updated_at: number;
 
 }
