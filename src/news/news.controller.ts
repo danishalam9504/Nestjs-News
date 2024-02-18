@@ -13,22 +13,6 @@ export class NewsController {
 
   index = 'news';
   query: any;
-  @Get()
-  findAll() {
-    this.query = {
-      query: {
-        match_all: {},
-      },
-      sort: [
-        {
-          "published_date": {
-            order: "desc"
-          }
-        }
-      ],
-    };
-    return this.newsService.executeQuery(this.index, this.query);
-  }
 
   @Post('search')
   // @UsePipes(new ValidationPipe({ whitelist: true }))
@@ -39,11 +23,11 @@ export class NewsController {
     let { search_value, search_key, sort_by, sort_by_key, country, category, creator, language, article_source, from, size } = formData;
     if (contentType.includes('multipart/form-data')) {
       search_key = search_key.split(',');
-      country = country.split(',');
-      category = category.split(','); article_source
-      creator = creator.split(',');
-      language = language.split(',');
-      article_source = article_source.split(',');
+      country = country ? country.split(',') : [];
+      category = category ? category.split(',') : [];
+      creator = creator ? creator.split(',') : [];
+      language = language ? language.split(',') : [];
+      article_source = article_source ? article_source.split(',') : [];
       from = +from;
       size = +size;
     }
@@ -134,17 +118,16 @@ export class NewsController {
     data['created_at'] = hits.length ? hits[0]['_source']['created_at'] : new Date().getTime();
     data['updated_at'] = new Date().getTime();
 
-    return this.newsService.create(this.index, data);
-  }
+    const result = await this.newsService.create(this.index, data);
 
-  @Put(':id')
-  update(@Param('id') id: string, @Body() data: any) {
-    return this.newsService.update(id, data);
-  }
-
-  @Patch(':id')
-  partialUpdate(@Param('id') id: string, @Body() data: any) {
-    return this.newsService.partialUpdate(id, data);
+    if(result){
+      let message=`News ${result['result']} successfully`;
+      return {
+        status: "ok",
+        news_id: result['_id'],
+        message
+      };
+    }
   }
 
   @Delete(':id')
