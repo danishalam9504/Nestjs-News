@@ -27,7 +27,7 @@ export class NewsDto{
   @IsString({ each: true })
   creator: string[];
 
-  @IsUrl()
+  @IsString()
   video_url: string;
 
   @IsNotEmpty()  // ensures the description is not empty
@@ -50,7 +50,7 @@ export class NewsDto{
   @IsNumber()
   published_date: number;
 
-  @IsUrl()
+  @IsString()
   image_url: string;
 
   @IsNotEmpty()
