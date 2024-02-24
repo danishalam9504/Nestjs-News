@@ -20,7 +20,7 @@ export class NewsController {
   async searchByKey(@Req() req: Request) {
     const contentType = req.headers['content-type'];
     const formData = req.body; // This will contain the form data fields
-    let { search_value, search_key, sort_by, sort_by_key, country, category, creator, language, article_source, from, size } = formData;
+    let { search_value, search_key, sort_by, sort_by_key, country, category, creator, language, article_source, lt_pub_date, size } = formData;
     if (contentType.includes('multipart/form-data')) {
       search_key = search_key.split(',');
       country = country ? country.split(',') : [];
@@ -28,25 +28,35 @@ export class NewsController {
       creator = creator ? creator.split(',') : [];
       language = language ? language.split(',') : [];
       article_source = article_source ? article_source.split(',') : [];
-      from = +from;
+      lt_pub_date = +lt_pub_date;
       size = +size;
     }
 
       let filter = [];
-      let must: any;
+      let must: any=[];
 
       // Check if search_value is null, undefined, or an empty string
       if (!search_value || search_value.trim() === "") {
-        must = {
-          "match_all": {}
-        };
+        must = [{
+            "match_all": {},
+          }];
       } else {
-        must = {
+        must = [{
           "multi_match": {
             "query": search_value,
             "fields": search_key
           }
-        };
+        }];
+      }
+
+      if(lt_pub_date !== 0){
+        must.push({
+          "range": {
+            "published_date": {
+              "lt": lt_pub_date  // This should be the provided published_date value
+            }
+          }
+        })
       }
 
       // Function to add terms to filter if array is not empty
@@ -81,9 +91,10 @@ export class NewsController {
             }
           }
         ],
-        "from": from,
         "size": size
       }
+      console.log(this.query);
+      console.log(must);
       const EsData = await this.newsService.executeQuery(this.index, this.query);
       const extractedData = this.newsService.extractRequiredFields(EsData);
       const count = EsData['hits']['hits'].length;
