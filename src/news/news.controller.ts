@@ -33,31 +33,57 @@ export class NewsController {
     }
 
       let filter = [];
-      let must: any=[];
+      let must :any;
 
       // Check if search_value is null, undefined, or an empty string
       if (!search_value || search_value.trim() === "") {
-        must = [{
-            "match_all": {},
+        if(lt_pub_date !== 0){
+          must = [{
+              "match_all": {},
+            },{ "range": {
+              "published_date": {
+                "lt": lt_pub_date  // This should be the provided published_date value
+              }
+            }
           }];
+        }else{
+          must = [{
+              "match_all": {},
+            }];
+        }
       } else {
-        must = [{
-          "multi_match": {
-            "query": search_value,
-            "fields": search_key
-          }
-        }];
+        if(lt_pub_date !== 0){
+          must = [{
+            "multi_match": {
+              "query": search_value,
+              "fields": search_key
+            }
+          },{
+            "range": {
+              "published_date": {
+                "lt": lt_pub_date  // This should be the provided published_date value
+              }
+            }
+          }];
+        }else{
+          must = [{
+            "multi_match": {
+              "query": search_value,
+              "fields": search_key
+            }
+          }];
+        }
       }
 
-      if(lt_pub_date !== 0){
-        must.push({
-          "range": {
-            "published_date": {
-              "lt": lt_pub_date  // This should be the provided published_date value
-            }
-          }
-        })
-      }
+      // if(lt_pub_date !== 0){
+      //   must.push({
+      //     "range": {
+      //       "published_date": {
+      //         "lt": lt_pub_date  // This should be the provided published_date value
+      //       }
+      //     }
+      //   })
+      // }
 
       // Function to add terms to filter if array is not empty
       const addTermsToFilter = async (field: string, values: any) => {
