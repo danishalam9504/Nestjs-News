@@ -124,11 +124,13 @@ export class NewsController {
       const EsData = await this.newsService.executeQuery(this.index, this.query);
       const extractedData = this.newsService.extractRequiredFields(EsData);
       const count = EsData['hits']['hits'].length;
+      const totalCount = EsData['hits']['total'];
 
       return {
         status: "ok",
         data: extractedData,
-        size: count
+        size: count,
+        totalCount
       };
   }
 
