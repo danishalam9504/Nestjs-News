@@ -117,14 +117,15 @@ export class NewsController {
             }
           }
         ],
-        "size": size
+        "size": size,
+        "track_total_hits": true
       }
       console.log(this.query);
       console.log(must);
       const EsData = await this.newsService.executeQuery(this.index, this.query);
       const extractedData = this.newsService.extractRequiredFields(EsData);
       const count = EsData['hits']['hits'].length;
-      const totalCount = EsData['hits']['total'];
+      const totalCount = EsData['hits']['total']['value'];
 
       return {
         status: "ok",
