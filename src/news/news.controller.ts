@@ -1,15 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, UploadedFiles, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { NewsService } from './news.service';
 import { NewsDto } from './dto/news.dto';
 import { SearchDto } from './dto/search.dto';
-import { truncate } from 'fs';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
+import { ConfigService } from '@nestjs/config'; 
 
 
 @Controller('news')
 export class NewsController {
-  constructor(private newsService: NewsService) { }
+  constructor(private newsService: NewsService,private readonly configService: ConfigService ) { }
 
   index = 'news';
   query: any;
@@ -199,7 +199,14 @@ export class NewsController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string,@Req() req: Request) {
+    const authToken = req.headers['auth-token'];
+    const authSecret = this.configService.get<string>('AUTH_SECRET');
+
+    if (!authToken || authToken !== authSecret) {
+      throw new BadRequestException('Invalid Auth-token');
+    }
+  
     this.query = {
       "query": {
         "match": {
