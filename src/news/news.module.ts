@@ -12,6 +12,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         auth: {
           apiKey: configService.get<string>('ELASTICSEARCH_API_KEY'),
         },
+        tls:{
+           rejectUnauthorized: false
+        }
       }),
       inject: [ConfigService], // Inject ConfigService into useFactory
     }),

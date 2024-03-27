@@ -1,8 +1,11 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { NewsModule } from './news/news.module';
 import { ConfigModule } from '@nestjs/config';
+import { APP_FILTER } from '@nestjs/core';
+import { NotFoundExceptionFilter } from './not-found-exception.filter';
+import * as cors from 'cors';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -12,6 +15,26 @@ import { ConfigModule } from '@nestjs/config';
     NewsModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: NotFoundExceptionFilter,
+    },
+    AppService,
+  ],
 })
-export class AppModule {}
+export class AppModule { 
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(cors()).forRoutes({
+      path: '*',
+      method: RequestMethod.ALL,
+    });
+    // consumer.apply(cors({
+    //   origin: 'http://example.com', // or a list of allowed origins ['http://example.com', 'https://example.com']
+    //   allowedHeaders: ['Authorization', 'Content-Type'],
+    // })).forRoutes({
+    //   path: '*',
+    //   method: RequestMethod.ALL,
+    // });
+  }
+}

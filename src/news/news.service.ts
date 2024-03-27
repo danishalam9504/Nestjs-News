@@ -82,7 +82,9 @@ export class NewsService {
             content: source.content,
             published_date: source.published_date,
             country: source.country,
+            language: source.language,
             category: source.category,
+            sentiment: source.sentiment,
             created_at: source.created_at,
             updated_at: source.updated_at,
           };
